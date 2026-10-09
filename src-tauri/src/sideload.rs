@@ -65,7 +65,13 @@ pub async fn sideload(
         .install_app(
             &provider,
             app_path.into(),
-            false,
+            // Upstream hard-codes `false` here, which means the App ID capability
+            // com.apple.developer.kernel.increased-memory-limit is never enabled and the
+            // provisioning profile cannot contain it — so iOS keeps the app at the default
+            // jetsam limit (~3.3 GB on a 12 GB device) instead of ~6 GB.
+            // The capability is enabled on the App ID *before* the profile is fetched
+            // (see isideload's sign_app), so the entitlement lands in the profile we sign with.
+            true,
             None::<fn(f32) -> std::future::Ready<()>>,
             Some(&device.pairing),
         )
